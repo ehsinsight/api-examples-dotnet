@@ -1,17 +1,12 @@
 # Summary
 This C# example project demonstrates the following API actions:
-* Add a user
-* Add a contact
-* Update a user
-* Execute a report
-* Execute a report with a named query
-* Add a form
-* Edit a form
-* Add a business hierarchy
-* Edit a business hierarchy
-* Add an employer
-* Add a position
+* Add, Update, and Delete a user
+* Add, Update, and Delete a form
+* Add, Update, and Delete a business hierarchy
+* Add and Delete an employer
+* Add and Delete a position
 * Add an attachment
+* Execute a report
 
 Full API Documentation is located at **Help / API Documentation**.
 
@@ -25,11 +20,19 @@ Please request a **SANDBOX** site for API experimentation and development.
 
 # Instructions
 
-1. Set the variables for the siteUrl and siteApiUrl to be the values to the site that you wish to run these code snippets against.
-1. Call the snippet with the desired parameters inputted if applicable.
-1. Adapt these snippets for your own needs.
+#### Running Examples
+1. Adjust variables in the `Settings.cs`
+    * Update `apiKey` with an API key generated in EHS Insight under **Administration / API Settings**
+    * Update `siteUrl` with your EHS Insight base URL (ex. `https://yoursite.ehsinsight.com`)
+1. Adapt these examples to your use cases
 
-
+#### Generating Additional Classes
+1. Install Java 8+
+1. Adjust the variables in the Configuration section of `CodeGenerator\GenerateEhsInsightModels.ps1`
+    * Update the `apiKey` variable with an API key generated in EHS Insight under **Administration / API Settings**
+    * Update the `openApiUrl` variable with your EHS Insight site name    
+1. Run `CodeGenerator\GenerateEhsInsightModels.ps1` using PowerShell
+1. Additional classes should now be added to the DotNetSamples project covering the entire API (with your site settings, user-defined fields, and user-defined report queries included)
 
 # License
 This repository contains programming examples.

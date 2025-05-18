@@ -1,6 +1,6 @@
 ﻿namespace DotNetSamples.Models
 {
-    public class Employer
+    public class EmployerRow
     {
         public Guid? RowUID { get; set; }
 

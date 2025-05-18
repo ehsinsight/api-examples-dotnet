@@ -1,8 +1,7 @@
-﻿using DotNetSamples.Converters;
+﻿using System.Text.Json;
 using DotNetSamples.Models;
 using RestSharp;
 using RestSharp.Serializers.Json;
-using System.Text.Json;
 
 namespace DotNetSamples.Services
 {
@@ -13,24 +12,77 @@ namespace DotNetSamples.Services
         /// </summary>
         /// <returns>List of position objects.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<List<Position>> FetchPositionListAsync()
+        public static async Task<List<PositionRow>> FetchPositionListAsync()
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/entity/Position/list");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/entity/Position/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<PositionListResponse>(request);
 
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.List;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.List;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                throw new Exception($"Error: {response.ErrorMessage ?? response.ErrorException?.Message}");
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
+            }
+        }
+
+        /// <summary>
+        /// Fetch a Position.
+        /// </summary>
+        /// <param name="rowUID">Unique identifier of the item.</param>
+        /// <returns>Position object.</returns>
+        /// <exception cref="Exception"></exception>
+        public static async Task<Position> FetchPositionAsync(Guid rowUID)
+        {
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest($"/api/v5/entity/Position/fetch/{rowUID}");
+            request.AddHeader("X-ApiKey", Settings.ApiKey);
+
+            var response = await client.ExecuteGetAsync<PositionFetchResponse>(request);
+
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
+            {
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.Entity;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
+            }
+            else
+            {
+                throw new Exception($"NetworkError: {response.ErrorMessage}", response.ErrorException);
             }
         }
 
@@ -42,39 +94,37 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task<Guid> AddPositionAsync(Position position)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/entity/Position/add");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/entity/Position/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(position);
 
-            var response = await client.ExecutePostAsync<PositionPostRepsonse>(request);
+            var response = await client.ExecutePostAsync<EntityAddResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.RowUID;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.RowUID.Value;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
-                {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
-
-                throw new Exception(errorMsg);
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
 
@@ -86,33 +136,35 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task DeletePositionAsync(Guid rowUID)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest($"/api/v4/entity/Position/delete/{rowUID}");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest($"/api/v5/entity/Position/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var response = await client.ExecuteGetAsync<PositionPostRepsonse>(request);
+            var response = await client.ExecuteGetAsync<EntityAddResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (!response.IsSuccessful || response.Data?.ResultCode != "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
+                switch (response.Data?.ResultCode)
                 {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
+                    case "OK":
+                        return;
 
-                throw new Exception(errorMsg);
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
+            }
+            else
+            {
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
     }

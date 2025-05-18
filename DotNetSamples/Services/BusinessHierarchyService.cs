@@ -1,8 +1,7 @@
-﻿using DotNetSamples.Converters;
+﻿using System.Text.Json;
 using DotNetSamples.Models;
 using RestSharp;
 using RestSharp.Serializers.Json;
-using System.Text.Json;
 
 namespace DotNetSamples.Services
 {
@@ -13,25 +12,37 @@ namespace DotNetSamples.Services
         /// </summary>
         /// <returns>List of business hierarchy objects.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<List<BusinessHierarchy>> FetchHierarchyListAsync()
+        public static async Task<List<HierarchyDefRow>> FetchHierarchyListAsync()
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/hierarchy/list");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/hierarchy/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var response = await client.ExecuteGetAsync<BusinessHierarchyListResponse>(request);
+            var response = await client.ExecuteGetAsync<HierarchyDefListResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.List;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.List;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                throw new Exception($"Error: {response.ErrorMessage ?? response.ErrorException?.Message}");
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
 
@@ -41,25 +52,37 @@ namespace DotNetSamples.Services
         /// <param name="rowUID">Unique identifier of the item.</param>
         /// <returns>Business hierarchy object.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<BusinessHierarchy> FetchHierarchyAsync(Guid rowUID)
+        public static async Task<HierarchyDef> FetchHierarchyAsync(Guid rowUID)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest($"/api/v4/hierarchy/fetch/{rowUID}");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest($"/api/v5/hierarchy/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var response = await client.ExecuteGetAsync<BusinessHierarchyFetchResponse>(request);
+            var response = await client.ExecuteGetAsync<HierarchyDefFetchResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.Hierarchy;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.Hierarchy;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                throw new Exception($"Error: {response.ErrorMessage ?? response.ErrorException?.Message}");
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
 
@@ -69,42 +92,41 @@ namespace DotNetSamples.Services
         /// <param name="businessHierarchy">Business hierarchy to add.</param>
         /// <returns>RowUID of newly added business hierarchy.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<Guid> AddHierarchyAsync(BusinessHierarchy businessHierarchy)
+        public static async Task<Guid> AddHierarchyAsync(HierarchyDef businessHierarchy)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/hierarchy/add");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/hierarchy/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(businessHierarchy);
 
-            var response = await client.ExecutePostAsync<BusinessHierarchyPostResponse>(request);
+            var response = await client.ExecutePostAsync<HierarchyDefAddResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.RowUID;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.RowUID.Value;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
-                {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
-
-                throw new Exception(errorMsg);
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
+
         }
 
         /// <summary>
@@ -113,37 +135,39 @@ namespace DotNetSamples.Services
         /// <param name="businessHierarchy">Business hierarchy to update.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task UpdateHierarchyAsync(BusinessHierarchy businessHierarchy)
+        public static async Task UpdateHierarchyAsync(HierarchyDef businessHierarchy)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/hierarchy/update");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/hierarchy/update");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(businessHierarchy);
 
-            var response = await client.ExecutePostAsync<BusinessHierarchyPostResponse>(request);
+            var response = await client.ExecutePostAsync<HierarchyDefUpdateResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (!response.IsSuccessful || response.Data?.ResultCode != "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
+                switch (response.Data?.ResultCode)
                 {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
+                    case "OK":
+                        return;
 
-                throw new Exception(errorMsg);
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
+            }
+            else
+            {
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
 
@@ -155,33 +179,35 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task DeleteHierarchyAsync(Guid rowUID)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest($"/api/v4/hierarchy/delete/{rowUID}");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest($"/api/v5/hierarchy/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var response = await client.ExecuteGetAsync<BusinessHierarchyPostResponse>(request);
+            var response = await client.ExecuteGetAsync<HierarchyDefDeleteResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (!response.IsSuccessful || response.Data?.ResultCode != "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
+                switch (response.Data?.ResultCode)
                 {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
+                    case "OK":
+                        return;
 
-                throw new Exception(errorMsg);
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
+            }
+            else
+            {
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
     }

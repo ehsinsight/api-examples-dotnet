@@ -14,6 +14,7 @@ namespace DotNetSamples.Examples
             // Create a new employer model.
             var newEmployer = new Employer
             {
+                RowUID = Guid.NewGuid(),
                 Title = "API Employer"
             };
 

@@ -5,32 +5,23 @@ using RestSharp.Serializers.Json;
 
 namespace DotNetSamples.Services
 {
-    public class CAPARegisterReportService
+    public class RoleService
     {
-
-        /// <summary>
-        /// Execute CAPA Register report targeting the CAPA named query.
-        /// </summary>
-        /// <param name="parameters">Parameters for the report.</param>
-        /// <returns>List of CAPA Register report rows.</returns>
-        /// <exception cref="Exception"></exception>
-        public static async Task<List<CAPARegisterCAPA>> ExecuteCAPAReportAsync(string parameters)
+        public static async Task<List<RoleDef>> FetchRoleListAsync()
         {
-            var apiUrl = !string.IsNullOrEmpty(parameters) ? $"/api/v5/report/CAPARegister/CAPA/execute?{parameters}" : $"/api/v5/report/CAPARegister/execute";
-
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest(apiUrl);
+            var request = new RestRequest("/api/v5/role/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var response = await client.ExecuteGetAsync<CAPARegisterCAPAResponse>(request);
+            var response = await client.ExecuteGetAsync<RoleDefListResponse>(request);
 
             if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
                 switch (response.Data?.ResultCode)
                 {
                     case "OK":
-                        return response.Data.Rows;
+                        return response.Data.List;
 
                     case "Validation":
                         throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
@@ -48,6 +39,7 @@ namespace DotNetSamples.Services
             {
                 throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
+
         }
     }
 }

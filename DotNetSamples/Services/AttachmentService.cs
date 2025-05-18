@@ -1,8 +1,7 @@
-﻿using DotNetSamples.Converters;
+﻿using System.Text.Json;
 using DotNetSamples.Models;
 using RestSharp;
 using RestSharp.Serializers.Json;
-using System.Text.Json;
 
 namespace DotNetSamples.Services
 {
@@ -16,15 +15,24 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task<byte[]> FetchAttachmentAsync(Guid rowUID)
         {
-            var client = new RestClient(Settings.SiteUrl);
-            var request = new RestRequest($"/api/v4/attachment/fetch/{rowUID}");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest($"/api/v5/attachment/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
-            var results = await client.DownloadStreamAsync(request);
+            var result = await client.DownloadStreamAsync(request);
 
             using var fileBytes = new MemoryStream();
-            await results.CopyToAsync(fileBytes);
-            return fileBytes.ToArray();
+
+            if (result != null)
+            {
+                await result.CopyToAsync(fileBytes);
+                return fileBytes.ToArray();
+            }
+            else
+            {
+                throw new Exception("NotFound: Attachment not found.");
+            }
         }
 
         /// <summary>
@@ -33,41 +41,39 @@ namespace DotNetSamples.Services
         /// <param name="attachment">Attachment object to be created.</param>
         /// <returns>RowUID of newly added attachment.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<Guid> AddAttachmentAsync(Attachment attachment)
+        public static async Task<Guid> AddAttachmentAsync(AttachmentDef attachment)
         {
-            // Options must be included for correct DateTime parsing from the API.
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new DateTimeStringConverter());
-            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(options));
-            var request = new RestRequest("/api/v4/attachment/add");
+            var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
+
+            var request = new RestRequest("/api/v5/attachment/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(attachment);
 
-            var response = await client.ExecutePostAsync<AttachmentPostResponse>(request);
+            var response = await client.ExecutePostAsync<AttachmentDefAddResponse>(request);
 
-            // if check on response success - this is not the same as the result code. Check restsharp success and then the statuscode from api
-            if (response.IsSuccessful && response.Data?.ResultCode == "OK")
+            if (response.IsSuccessful || (response.Data != null && response.Data.ResultCode != null))
             {
-                return response.Data.RowUID;
+                switch (response.Data?.ResultCode)
+                {
+                    case "OK":
+                        return response.Data.RowUID.Value;
+
+                    case "Validation":
+                        throw new Exception($"Validation: {response.Data.Description} - {string.Join(", ", response.Data.Messages?.Select(x => x.Message) ?? [])}");
+                    case "Exception":
+                        throw new Exception($"Exception: {response.Data.Description} ({response.Data.CorrelationID})");
+                    case "NotFound":
+                        throw new Exception($"NotFound: {response.Data.Description}");
+                    case "Forbidden":
+                        throw new Exception($"Forbidden: {response.Data.Description}");
+                    default:
+                        throw new Exception($"Error: {response.Data?.Description}");
+                }
             }
             else
             {
-                var errorMsg = $"Error: {response.ErrorMessage ?? response.ErrorException?.Message}";
-                if (response.Data?.Messages?.Count > 0)
-                {
-                    errorMsg = $"Error(s): {string.Join(", ", response.Data.Messages.Select(x => x.Message))}";
-                }
-                else if (response.Data?.Description != null)
-                {
-                    errorMsg = $"Error: {response.Data?.Description}";
-                }
-                else if (response.ErrorMessage == null)
-                {
-                    errorMsg = "An unknown error occurred.";
-                }
-
-                throw new Exception(errorMsg);
+                throw new Exception($"RequestError: {response.ErrorMessage ?? response.Content}", response.ErrorException);
             }
         }
     }

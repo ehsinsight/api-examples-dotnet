@@ -140,3 +140,8 @@ publish/
 *.[Cc]ache
 # but keep track of directories ending in .cache
 !*.[Cc]ache/
+CodeGenerator/swagger-codegen-cli.jar
+/CodeGenerator/.swagger-codegen
+/CodeGenerator/docs
+/CodeGenerator/src
+/CodeGenerator/Output

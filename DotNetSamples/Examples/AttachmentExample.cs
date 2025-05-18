@@ -3,7 +3,7 @@ using DotNetSamples.Services;
 
 namespace DotNetSamples.Examples
 {
-    public class AttachmentExamples
+    public class AttachmentExample
     {
         /// <summary>
         /// Add attachment example.
@@ -12,11 +12,11 @@ namespace DotNetSamples.Examples
         public static async Task<Guid> AddAttachmentAsync()
         {
             // Create attachment model.
-            var newAttachment = new Attachment
+            var newAttachment = new AttachmentDef
             {
-                RowUID = Guid.Empty,
+                RowUID = Guid.NewGuid(),
                 FileName = "API.txt",
-                ContentType = "text/html",
+                ContentType = "text/plain",
                 FileBytesBase64 = "QVBJIFRFU1Q=" // You do not need to initialize here, convert your file and assign it. This example is mocking a fake text file.
             };
 

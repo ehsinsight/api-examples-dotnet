@@ -11,15 +11,16 @@ namespace DotNetSamples.Examples
         /// <returns>Guid of new position</returns>
         public static async Task<Guid> AddPositionAsync()
         {
-            // Grab an existing position family Guid.
+            // For this example, first fetch the existing position list so that we find a valid position family UID.
             var positionList = await PositionService.FetchPositionListAsync();
-            var positionFamilyUID = positionList.First(x => x.Title == "Bookkeeper").PostionFamily;
+            var position = positionList.First(x => x.Title == "Bookkeeper");
+            var positionFamily = position?.PositionFamily;
 
             // Construct a new position object.
             var newPosition = new Position
             {
                 Title = "API Position",
-                PostionFamily = positionFamilyUID
+                PositionFamily = positionFamily
             };
 
             // Send to API.

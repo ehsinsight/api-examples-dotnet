@@ -5,178 +5,259 @@ namespace DotNetSamples
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             try
             {
-                #region UserContact Examples
+                // CAUTION:
 
-                var userContacts = await UserContactService.FetchUserContactListAsync();
-                if (userContacts.Count > 0)
-                {
-                    foreach (var userContact in userContacts)
-                    {
-                        Console.WriteLine($"RowUID: {userContact.RowUID} - FullName: {userContact.FullName} - BusinessEntity: {userContact.BusinessEntity}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("There was an error fetching the list of users");
-                }
+                // DO NOT RUN API EXAMPLES AGAINST A PRODUCTION SITE.
 
-                var newUserUID = await UserContactExample.AddUserAsync();
-                Console.WriteLine($"New user RowUID: {newUserUID}");
-                var newUser = await UserContactService.FetchUserContactAsync(newUserUID);
-                Console.WriteLine($"RowUID: {newUser.RowUID} - FullName: {newUser.FullName} - BusinessEntity: {newUser.BusinessEntity} - Position: {newUser.Position} - Employer: {newUser.Employer}");
+                // These samples are not intended to be run in production. They are for demonstration purposes only.
+                // They may create, update, or delete data in your system. Use with caution.
 
-                await UserContactExample.UpdateUserAsync();
-                newUser = await UserContactService.FetchUserContactAsync(newUserUID);
-                Console.WriteLine($"UPDATED USER - RowUID: {newUser.RowUID} - FullName: {newUser.FullName} - BusinessEntity: {newUser.BusinessEntity} - Position: {newUser.Position} - Employer: {newUser.Employer}");
+                // Several of the samples depend on the sample data included in TRIAL sites, such as a business entity named "Scranton" and a position named "Bookkeeper". 
+                // If you are using a SANDBOX site, some adjustments will be required to adapt the samples to your data.
 
-                await UserContactService.DeleteUserContactAsync(newUserUID);
-                #endregion
+                
+                await UserContactExamples();
+                await ReportExamples();
+                await FormExamples();
+                await BusinessHierarchyExamples();
+                await EmployerExamples();
+                await PositionExamples();
+                await AttachmentExamples();
 
-                #region Report Examples
-                var capaRegisterOverdueRows = await ReportExecuteExample.GetPastYearOpenCAPARegisterReportAsync();
-                Console.WriteLine("CAPA Register report rows that are open and within the past year:");
-                if (capaRegisterOverdueRows != null)
-                {
-                    foreach (var row in capaRegisterOverdueRows)
-                    {
-                        Console.WriteLine("{");
-                        Console.WriteLine($"    Form: {row?.Form}");
-                        Console.WriteLine($"    BusinessEntity: {row?.BusinessEntity}");
-                        Console.WriteLine($"    IdentificationDate: {row?.IdentificationDate}");
-                        Console.WriteLine($"    ActionType: {row?.ActionType}");
-                        Console.WriteLine($"    Source: {row?.Source}");
-                        Console.WriteLine($"    RecommendedActionDescription: {row?.RecommendedActionDescription}");
-                        Console.WriteLine($"    AssignedTo: {row?.AssignedTo}");
-                        Console.WriteLine($"    CurrentDueDate: {row?.CurrentDueDate}");
-                        Console.WriteLine($"    DaysOverdue: {row?.DaysOverdue}");
-                        Console.WriteLine($"    CompletedDate: {row?.CompletedDate}");
-                        Console.WriteLine($"    CompletionDays: {row?.CompletionDays}");
-                        Console.WriteLine($"    Workflow: {row?.Workflow}");
-                        Console.WriteLine($"    Status: {row?.Status}");
-                        Console.WriteLine("}");
-                        Console.WriteLine();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("There was an error fetching the CAPA Register Report rows.");
-                }
 
-                var capaRegisterCapaNqRows = await ReportExecuteExample.GetCAPARegisterReportWithNamedQueryAsync();
-                Console.WriteLine("CAPA Register report with named query CAPA rows:");
-                if (capaRegisterCapaNqRows != null)
-                {
-                    foreach (var row in capaRegisterCapaNqRows)
-                    {
-                        Console.WriteLine("{");
-                        Console.WriteLine($"    Form: {row?.Form}");
-                        Console.WriteLine($"    BusinessEntity: {row?.BusinessEntity}");
-                        Console.WriteLine($"    IdentificationDate: {row?.IdentificationDate}");
-                        Console.WriteLine($"    ActionType: {row?.ActionType}");
-                        Console.WriteLine($"    Source: {row?.Source}");
-                        Console.WriteLine($"    RecommendedActionDescription: {row?.RecommendedActionDescription}");
-                        Console.WriteLine($"    AssignedTo: {row?.AssignedTo}");
-                        Console.WriteLine($"    CurrentDueDate: {row?.CurrentDueDate}");
-                        Console.WriteLine($"    DaysOverdue: {row?.DaysOverdue}");
-                        Console.WriteLine($"    CompletedDate: {row?.CompletedDate}");
-                        Console.WriteLine($"    CompletionDays: {row?.CompletionDays}");
-                        Console.WriteLine($"    Workflow: {row?.Workflow}");
-                        Console.WriteLine($"    Status: {row?.Status}");
-                        Console.WriteLine("}");
-                        Console.WriteLine();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("There was an error fetching the CAPA Register Report with named query CAPA rows.");
-                }
-                #endregion
-
-                #region Form Examples
-                var date = DateTime.UtcNow.AddMonths(-1);
-                var queryString = $"createdAfter={date}"; // createdAfter or UpdatedAfter should be used to target new additions or changes since the last time this request was made to avoid returning unnecessary results
-                var capaFormsPastMonthList = await CAPAFormService.FetchCAPAFormListAsync(queryString);
-                if (capaFormsPastMonthList.Count > 0)
-                {
-                    foreach (var capaForm in capaFormsPastMonthList)
-                    {
-                        Console.WriteLine($"RowUID: {capaForm.RowUID} - FormNumber: {capaForm.FormNumber} - CreatedDtm: {capaForm?.CreatedDtm}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("There was an error fetching the list of business hierarchies.");
-                }
-
-                var newCapaFormUID = await FormExamples.AddCAPAFormAsync();
-                Console.WriteLine($"New CAPA Form RowUID: {newCapaFormUID}");
-                var newCapaForm = await CAPAFormService.FetchCAPAFormAsync(newCapaFormUID);
-                Console.WriteLine($"RowUID: {newCapaForm.RowUID} - FormNumber: {newCapaForm.FormNumber} - CreatedDtm: {newCapaForm.CreatedDtm} - UpdatedDtm: {newCapaForm?.UpdatedDtm} - DueDate: {newCapaForm?.DueDate} - Findings: {newCapaForm?.Findings}");
-
-                await FormExamples.UpdateCAPAFormAsync();
-                newCapaForm = await CAPAFormService.FetchCAPAFormAsync(newCapaFormUID);
-                Console.WriteLine($"UPDATED CAPA FORM - RowUID: {newCapaForm.RowUID} - FormNumber: {newCapaForm.FormNumber} - CreatedDtm: {newCapaForm.CreatedDtm} - UpdatedDtm: {newCapaForm?.UpdatedDtm} - DueDate: {newCapaForm?.DueDate} - Findings: {newCapaForm?.Findings}");
-
-                await CAPAFormService.DeleteCAPAFormAsync(newCapaFormUID);
-                #endregion
-
-                #region Business Hierarchy Examples
-                var hierarchyList = await BusinessHierarchyService.FetchHierarchyListAsync();
-                if (hierarchyList.Count > 0)
-                {
-                    foreach (var hierarchy in hierarchyList)
-                    {
-                        Console.WriteLine($"RowUID: {hierarchy.RowUID} - Title: {hierarchy.Title} - StartDate: {hierarchy?.StartDate}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("There was an error fetching the list of business hierarchies.");
-                }
-
-                var newHierarchyUID = await BusinessHierarchyExamples.AddBusinessHierarchyAsync();
-                Console.WriteLine($"New business hierarchy RowUID: {newHierarchyUID}");
-                var newHierarchy = await BusinessHierarchyService.FetchHierarchyAsync(newHierarchyUID);
-                Console.WriteLine($"RowUID: {newHierarchy.RowUID} - Title: {newHierarchy.Title} - StartDate: {newHierarchy?.StartDate} - Comments: {newHierarchy?.Comments}");
-
-                await BusinessHierarchyExamples.UpdateBusinessHierarchyAsync();
-                newHierarchy = await BusinessHierarchyService.FetchHierarchyAsync(newHierarchyUID);
-                Console.WriteLine($"UPDATED BUSINESS HIERARCHY - RowUID: {newHierarchy.RowUID} - Title: {newHierarchy.Title} - StartDate: {newHierarchy?.StartDate} - Comments: {newHierarchy?.Comments}");
-
-                await BusinessHierarchyService.DeleteHierarchyAsync(newHierarchyUID);
-                #endregion
-
-                #region Employer Examples
-                var newEmployerUID = await EmployerExample.AddEmployerAsync();
-                Console.WriteLine($"New employer RowUID: {newEmployerUID}");
-
-                await EmployerService.DeleteEmployerAsync(newEmployerUID);
-                #endregion
-
-                #region Position Examples
-                var newPositionUID = await PositionExample.AddPositionAsync();
-                Console.WriteLine($"New position RowUID: {newPositionUID}");
-
-                await PositionService.DeletePositionAsync(newPositionUID);
-                #endregion
-
-                #region Attachment Examples
-                // To test this uncomment the following lines. Be aware the attachments will not be deleted. There is no API route for delete.
-                // var newAttachmentUID = await AttachmentExamples.AddAttachmentAsync();
-                // Console.WriteLine($"New attachment RowUID: {newAttachmentUID}");
-                // var attachmentBytes = await AttachmentService.FetchAttachmentAsync(newAttachmentUID);
-                // var attachmentText = System.Text.Encoding.UTF8.GetString(attachmentBytes); // the attachment in this example is a text file
-                // Console.WriteLine($"RowUID: {newAttachmentUID} - Content: {attachmentText}");
-                #endregion
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
+
+        static async Task UserContactExamples()
+        {
+            Console.WriteLine("================================================================================");
+            
+            var userContacts = await UserContactService.FetchUserContactListAsync();
+
+            foreach (var userContact in userContacts)
+            {
+                Console.WriteLine($"RowUID: {userContact.RowUID} - FullName: {userContact.FullName} - BusinessEntity: {userContact.BusinessEntity}");
+            }
+
+            Console.WriteLine("================================================================================");
+
+            var newRowUID = await UserContactExample.AddUserAsync();
+
+            Console.WriteLine($"New User - RowUID: {newRowUID}");
+
+            Console.WriteLine("================================================================================");
+
+            var newUser = await UserContactService.FetchUserContactAsync(newRowUID);
+
+            Console.WriteLine($"Fetched User - RowUID: {newUser.RowUID} - FullName: {newUser.FullName} - BusinessEntity: {newUser.BusinessEntity} - Position: {newUser.Position} - Employer: {newUser.Employer}");
+
+            Console.WriteLine("================================================================================");
+
+            await UserContactExample.UpdateUserAsync(newRowUID);
+
+            newUser = await UserContactService.FetchUserContactAsync(newRowUID);
+
+            Console.WriteLine($"Updated User - RowUID: {newUser.RowUID} - FullName: {newUser.FullName} - BusinessEntity: {newUser.BusinessEntity} - Position: {newUser.Position} - Employer: {newUser.Employer}");
+
+            Console.WriteLine("================================================================================");
+
+            await UserContactService.DeleteUserContactAsync(newRowUID);
+
+            Console.WriteLine($"Deleted User - RowUID: {newRowUID}");
+        }
+
+        static async Task ReportExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            var reportAllRows = await ReportExecuteExample.GetCAPARegisterReportWithDefaultParametersAsync();
+
+            Console.WriteLine("CAPA Register report with default parameters:");
+
+            foreach (var row in reportAllRows)
+            {
+                var daysOverdue = row.IsComplete == 1 || !row.DueDate.HasValue || row.DueDate.Value > DateTime.Today ? 0 : (DateTime.Today - row.DueDate.Value).Days;
+
+                Console.WriteLine("{");
+                Console.WriteLine($"    FormNumber: {row.FormNumber}");
+                Console.WriteLine($"    BusinessEntity: {row.BusinessEntity}");
+                Console.WriteLine($"    IdentificationDate: {row.IdentificationDate}");
+                Console.WriteLine($"    ActionType: {row.ActionType}");
+                Console.WriteLine($"    ActionDescription: {row.ActionDescription}");
+                Console.WriteLine($"    AssignedTo: {row.AssignedTo}");
+                Console.WriteLine($"    DueDate: {row.DueDate}");
+                Console.WriteLine($"    CompletedDate: {row.CompletedDate}");
+                Console.WriteLine($"    DaysOverDue: {daysOverdue}");
+                Console.WriteLine("}");
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("================================================================================");
+
+            var reportScrantonRows = await ReportExecuteExample.GetCAPARegisterReportPastYearScrantonAsync();
+
+            Console.WriteLine("CAPA Register report for past year at Scranton Business Entity:");
+
+            foreach (var row in reportScrantonRows)
+            {
+                var daysOverdue = row.IsComplete == 1 || !row.DueDate.HasValue || row.DueDate.Value > DateTime.Today ? 0 : (DateTime.Today - row.DueDate.Value).Days;
+
+                Console.WriteLine("{");
+                Console.WriteLine($"    FormNumber: {row.FormNumber}");
+                Console.WriteLine($"    BusinessEntity: {row.BusinessEntity}");
+                Console.WriteLine($"    IdentificationDate: {row.IdentificationDate}");
+                Console.WriteLine($"    ActionType: {row.ActionType}");
+                Console.WriteLine($"    ActionDescription: {row.ActionDescription}");
+                Console.WriteLine($"    AssignedTo: {row.AssignedTo}");
+                Console.WriteLine($"    DueDate: {row.DueDate}");
+                Console.WriteLine($"    CompletedDate: {row.CompletedDate}");
+                Console.WriteLine($"    DaysOverDue: {daysOverdue}");
+                Console.WriteLine("}");
+                Console.WriteLine();
+            }
+        }
+
+        static async Task FormExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            var date = DateTime.UtcNow.AddMonths(-1);
+
+            var queryString = $"updatedAfter={date}"; // createdAfter or updatedAfter should be used to target new additions or changes since the last time this request was made to avoid returning unnecessary results
+
+            var capaFormsPastMonthList = await CAPAFormService.FetchCAPAFormListAsync(queryString);
+
+            Console.WriteLine($"CAPA forms updated after: {date}");
+
+            foreach (var capaForm in capaFormsPastMonthList)
+            {
+                Console.WriteLine($"  RowUID: {capaForm.RowUID} - FormNumber: {capaForm.FormNumber} - CreatedDtm: {capaForm.CreatedDtm}");
+            }
+
+            Console.WriteLine("================================================================================");
+
+            var newRowUID = await FormExample.AddCAPAFormAsync();
+
+            Console.WriteLine($"New CAPA Form - RowUID: {newRowUID}");
+
+            Console.WriteLine("================================================================================");
+
+            var newCapaForm = await CAPAFormService.FetchCAPAFormAsync(newRowUID);
+
+            Console.WriteLine($"Fetched CAPA Form - RowUID: {newCapaForm.RowUID} - FormNumber: {newCapaForm.FormNumber} - CreatedDtm: {newCapaForm.CreatedDtm} - UpdatedDtm: {newCapaForm.UpdatedDtm} - DueDate: {newCapaForm.DueDate} - Findings: {newCapaForm.Findings}");
+
+            Console.WriteLine("================================================================================");
+
+            await FormExample.UpdateCAPAFormAsync(newRowUID);
+
+            newCapaForm = await CAPAFormService.FetchCAPAFormAsync(newRowUID);
+
+            Console.WriteLine($"Updated CAPA Form - RowUID: {newCapaForm.RowUID} - FormNumber: {newCapaForm.FormNumber} - CreatedDtm: {newCapaForm.CreatedDtm} - UpdatedDtm: {newCapaForm.UpdatedDtm} - DueDate: {newCapaForm.DueDate} - Findings: {newCapaForm.Findings}");
+
+            Console.WriteLine("================================================================================");
+
+            await CAPAFormService.DeleteCAPAFormAsync(newRowUID);
+
+            Console.WriteLine($"Deleted CAPA Form - RowUID: {newRowUID}");
+
+        }
+
+        static async Task BusinessHierarchyExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            var hierarchyList = await BusinessHierarchyService.FetchHierarchyListAsync();
+
+            Console.WriteLine("Business Entities:");
+
+            foreach (var hierarchy in hierarchyList)
+            {
+                Console.WriteLine($"RowUID: {hierarchy.RowUID} - Title: {hierarchy.Title} - StartDate: {hierarchy.StartDate}");
+            }
+
+            Console.WriteLine("================================================================================");
+
+            var newHierarchyUID = await BusinessHierarchyExample.AddBusinessHierarchyAsync();
+
+            Console.WriteLine($"New Business Entity - RowUID: {newHierarchyUID}");
+
+            Console.WriteLine("================================================================================");
+
+            var newHierarchy = await BusinessHierarchyService.FetchHierarchyAsync(newHierarchyUID);
+
+            Console.WriteLine($"Fetched Business Entity - RowUID: {newHierarchy.RowUID} - Title: {newHierarchy.Title} - StartDate: {newHierarchy.StartDate} - Comments: {newHierarchy.Comments}");
+
+            Console.WriteLine("================================================================================");
+
+            await BusinessHierarchyExample.UpdateBusinessHierarchyAsync(newHierarchyUID);
+
+            newHierarchy = await BusinessHierarchyService.FetchHierarchyAsync(newHierarchyUID);
+
+            Console.WriteLine($"Updated Business Entity - RowUID: {newHierarchy.RowUID} - Title: {newHierarchy.Title} - StartDate: {newHierarchy.StartDate} - Comments: {newHierarchy.Comments}");
+
+            Console.WriteLine("================================================================================");
+
+            await BusinessHierarchyService.DeleteHierarchyAsync(newHierarchyUID);
+
+            Console.WriteLine($"Deleted Business Entity - RowUID: {newHierarchyUID}");
+
+        }
+
+        static async Task EmployerExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            var newRowUID = await EmployerExample.AddEmployerAsync();
+
+            Console.WriteLine($"New Employer - RowUID: {newRowUID}");
+            
+            Console.WriteLine("================================================================================");
+
+            await EmployerService.DeleteEmployerAsync(newRowUID);
+
+            Console.WriteLine($"Deleted Employer - RowUID: {newRowUID}");
+        }
+
+        static async Task PositionExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            var newRowUID = await PositionExample.AddPositionAsync();
+
+            Console.WriteLine($"New Position - RowUID: {newRowUID}");
+
+            Console.WriteLine("================================================================================");
+
+            await PositionService.DeletePositionAsync(newRowUID);
+
+            Console.WriteLine($"Deleted Position - RowUID: {newRowUID}");
+        }
+
+        static async Task AttachmentExamples()
+        {
+            Console.WriteLine("================================================================================");
+
+            // To test this uncomment the following lines. Be aware the attachments will not be deleted. There is no API route for delete.
+            var newAttachmentUID = await AttachmentExample.AddAttachmentAsync();
+            
+            Console.WriteLine($"New Attachment - RowUID: {newAttachmentUID}");
+
+            Console.WriteLine("================================================================================");
+
+            var attachmentBytes = await AttachmentService.FetchAttachmentAsync(newAttachmentUID);
+
+            var attachmentText = System.Text.Encoding.UTF8.GetString(attachmentBytes); // the attachment in this example is a text file
+
+            Console.WriteLine($"Fetched Attachment - RowUID: {newAttachmentUID} - Content: {attachmentText}");
+        }
+
     }
 }
