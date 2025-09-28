@@ -11,7 +11,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/role/list");
+            var request = new RestRequest("/api/v6/role/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<RoleDefListResponse>(request);

@@ -17,7 +17,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/attachment/fetch/{rowUID}");
+            var request = new RestRequest($"/api/v6/attachment/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var result = await client.DownloadStreamAsync(request);
@@ -45,7 +45,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/attachment/add");
+            var request = new RestRequest("/api/v6/attachment/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(attachment);

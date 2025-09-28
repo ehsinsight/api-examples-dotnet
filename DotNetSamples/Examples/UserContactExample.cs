@@ -33,7 +33,7 @@ namespace DotNetSamples.Examples
 
                 UserContactType = "User", // Valid values here include User, Guest, and Device.
 
-                AuthProvider = "Internal", // This could also be "SAML" if SSO is enabled.
+                AuthProvider = "Password", // This could also be "SAML" if SSO is enabled or "Passwordless" if Passwordless is enabled.
 
                 IsEnabled = 1,
 

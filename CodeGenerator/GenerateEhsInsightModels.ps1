@@ -51,7 +51,7 @@
 # Configuration
 # ------------------------------------------------------------------------------------ #
 
-$openApiUrl = "http://YOURSITE.ehsinsight.com/api/v5/openapi";     # Replace with the target URL
+$openApiUrl = "https://YOURSITE.ehsinsight.com/api/v6/openapi";     # Replace with the target URL
 $apiKey = "YOURAPIKEY";     # Replace with your API Key
 
 $language = "csharp";

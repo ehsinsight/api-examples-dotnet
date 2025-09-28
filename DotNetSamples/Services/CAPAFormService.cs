@@ -15,7 +15,7 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task<List<CAPARow>> FetchCAPAFormListAsync(string parameters)
         {
-            var apiUrl = parameters?.Length > 0 ? $"/api/v5/entity/CAPA/list?{parameters}" : $"/api/v5/entity/CAPA/list";
+            var apiUrl = parameters?.Length > 0 ? $"/api/v6/entity/CAPA/list?{parameters}" : $"/api/v6/entity/CAPA/list";
 
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
@@ -59,7 +59,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/entity/CAPA/fetch/{rowUID}");
+            var request = new RestRequest($"/api/v6/entity/CAPA/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<CAPAFetchResponse>(request);
@@ -99,7 +99,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/CAPA/add");
+            var request = new RestRequest("/api/v6/entity/CAPA/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(capa);
@@ -141,7 +141,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/CAPA/update");
+            var request = new RestRequest("/api/v6/entity/CAPA/update");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(capa);
@@ -183,7 +183,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/entity/CAPA/delete/{rowUID}");
+            var request = new RestRequest($"/api/v6/entity/CAPA/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<EntityDeleteResponse>(request);

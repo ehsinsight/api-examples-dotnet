@@ -16,7 +16,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/Employer/list");
+            var request = new RestRequest("/api/v6/entity/Employer/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<EmployerListResponse>(request);
@@ -56,7 +56,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/Employer/add");
+            var request = new RestRequest("/api/v6/entity/Employer/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(employer);
@@ -98,7 +98,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/entity/Employer/delete/{rowUID}");
+            var request = new RestRequest($"/api/v6/entity/Employer/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<EntityAddResponse>(request);

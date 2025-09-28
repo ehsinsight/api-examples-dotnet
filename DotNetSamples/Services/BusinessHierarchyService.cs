@@ -16,7 +16,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/hierarchy/list");
+            var request = new RestRequest("/api/v6/hierarchy/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<HierarchyDefListResponse>(request);
@@ -56,7 +56,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/hierarchy/fetch/{rowUID}");
+            var request = new RestRequest($"/api/v6/hierarchy/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<HierarchyDefFetchResponse>(request);
@@ -96,7 +96,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/hierarchy/add");
+            var request = new RestRequest("/api/v6/hierarchy/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(businessHierarchy);
@@ -139,7 +139,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/hierarchy/update");
+            var request = new RestRequest("/api/v6/hierarchy/update");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(businessHierarchy);
@@ -181,7 +181,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/hierarchy/delete/{rowUID}");
+            var request = new RestRequest($"/api/v6/hierarchy/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<HierarchyDefDeleteResponse>(request);

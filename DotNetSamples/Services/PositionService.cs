@@ -16,7 +16,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/Position/list");
+            var request = new RestRequest("/api/v6/entity/Position/list");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<PositionListResponse>(request);
@@ -56,7 +56,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/entity/Position/fetch/{rowUID}");
+            var request = new RestRequest($"/api/v6/entity/Position/fetch/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<PositionFetchResponse>(request);
@@ -96,7 +96,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest("/api/v5/entity/Position/add");
+            var request = new RestRequest("/api/v6/entity/Position/add");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
             request.AddHeader("Content-type", "application/json");
             request.AddJsonBody(position);
@@ -138,7 +138,7 @@ namespace DotNetSamples.Services
         {
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
-            var request = new RestRequest($"/api/v5/entity/Position/delete/{rowUID}");
+            var request = new RestRequest($"/api/v6/entity/Position/delete/{rowUID}");
             request.AddHeader("X-ApiKey", Settings.ApiKey);
 
             var response = await client.ExecuteGetAsync<EntityAddResponse>(request);

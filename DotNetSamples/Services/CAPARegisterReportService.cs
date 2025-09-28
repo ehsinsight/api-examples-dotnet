@@ -16,7 +16,7 @@ namespace DotNetSamples.Services
         /// <exception cref="Exception"></exception>
         public static async Task<List<CAPARegisterCAPA>> ExecuteCAPAReportAsync(string parameters)
         {
-            var apiUrl = !string.IsNullOrEmpty(parameters) ? $"/api/v5/report/CAPARegister/CAPA/execute?{parameters}" : $"/api/v5/report/CAPARegister/execute";
+            var apiUrl = !string.IsNullOrEmpty(parameters) ? $"/api/v6/report/CAPARegister/CAPA/execute?{parameters}" : $"/api/v6/report/CAPARegister/execute";
 
             var client = new RestClient(Settings.SiteUrl, configureSerialization: s => s.UseSystemTextJson(new JsonSerializerOptions()));
 
